@@ -89,7 +89,7 @@ public class Figure : MonoBehaviour
     }
     
     // Health management
-    public virtual void TakeDamage(int amount, DamageType type)
+    public virtual void TakeDamage(int amount, DamageType type, Figure attacker = null)
     {
         // Check for resistance or vulnerability based on damage type
         float damageMultiplier = 1.0f;
@@ -112,7 +112,7 @@ public class Figure : MonoBehaviour
         // Check if figure is defeated
         if (currentHealth <= 0)
         {
-            HandleDefeat();
+            HandleDefeat(attacker);
         }
     }
     
@@ -128,18 +128,24 @@ public class Figure : MonoBehaviour
         Debug.Log($"{figureName} healed for {amount}. Health: {currentHealth}/{maxHealth}");
     }
     
-    // Then modify the existing OnDefeated method (rename it to avoid confusion)
-    protected virtual void HandleDefeat()
+    protected virtual void HandleDefeat(Figure attacker)
     {
         Debug.Log($"{figureName} has been defeated!");
-        
-        // Store position for capture movement
-        int defeatQ = currentQ;
-        int defeatR = currentR;
-        
+
+        // Publish the defeat event for monster capture
+        if (ServiceLocator.Instance?.Events != null)
+        {
+            ServiceLocator.Instance.Events.Publish(new FigureDefeatedEvent 
+            {
+                DefeatedFigure = this,
+                AttackerFigure = attacker,
+                Position = new Vector2Int(currentQ, currentR)
+            });
+        }
+
         // Invoke event before destroying the GameObject
         OnDefeated?.Invoke(this);
-        
+
         // Allow a short delay before destruction for visual effect
         StartCoroutine(DestroyWithDelay(0.3f));
     }
@@ -215,7 +221,7 @@ public class Figure : MonoBehaviour
         }));
     }
     
-    // Base movement animation (unchanged)
+    // Base movement animation 
     private IEnumerator AnimateMovement(Vector3 targetPosition, System.Action onComplete)
     {
         isMoving = true;
@@ -244,7 +250,7 @@ public class Figure : MonoBehaviour
         onComplete?.Invoke();
     }
 
-    // Standard Figure functions (unchanged)
+    // Standard Figure functions
     public void SetHexCoordinates(int q, int r)
     {
         currentQ = q;

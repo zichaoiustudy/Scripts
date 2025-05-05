@@ -41,3 +41,16 @@ public struct SystemTurnEndedEvent
 {
     public int RoundNumber;
 }
+
+public struct FigureDefeatedEvent
+{
+    public Figure DefeatedFigure;
+    public Figure AttackerFigure;
+    public Vector2Int Position;
+}
+
+public struct GameVictoryEvent
+{
+    public int WinningPlayerId;
+    public string DefeatReason;
+}

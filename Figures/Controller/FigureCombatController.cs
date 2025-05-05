@@ -96,55 +96,19 @@ public class FigureCombatController : MonoBehaviour
     /// <returns>True if the attack was successful</returns>
     public bool AttackFigure(Figure targetFigure, int availableActionPoints, System.Action onComplete = null)
     {
-        // Validate basic requirements
+        // Keep minimal validation for safety
         Figure selectedFigure = selectionController?.GetSelectedFigure();
         
-        if (selectionController == null || selectedFigure == null || targetFigure == null || 
-            availableActionPoints <= 0)
+        if (selectedFigure == null || targetFigure == null || availableActionPoints <= 0)
         {
             Debug.Log("Attack failed: Invalid figures or no action points");
             onComplete?.Invoke();
             return false;
         }
-
+    
+        // Clear any indicators since we're executing the attack
         selectionController.ClearAllIndicators();
-
-        // Check if figures belong to different players
-        if (selectedFigure.PlayerId == targetFigure.PlayerId)
-        {
-            Debug.Log("Can't attack your own figures");
-            onComplete?.Invoke();
-            return false;
-        }
-
-        // Check if figure can attack (has moved since last attack)
-        if (!CanAttack(selectedFigure))
-        {
-            Debug.Log("Must move before attacking again");
-            onComplete?.Invoke();
-            return false;
-        }
-
-        // Check if target is within attack range (adjacent)
-        Vector2Int startPos = new Vector2Int(selectedFigure.CurrentQ, selectedFigure.CurrentR);
-        Vector2Int targetPos = new Vector2Int(targetFigure.CurrentQ, targetFigure.CurrentR);
-
-        // Check if target is adjacent
-        if (HexUtils.HexDistance(startPos, targetPos) != 1)
-        {
-            Debug.Log("Target is not in attack range");
-            onComplete?.Invoke();
-            return false;
-        }
-
-        // Check for obstacles like barriers or invalid altitude changes
-        if (!CanReachForAttack(startPos, targetPos))
-        {
-            Debug.Log("Cannot attack through barrier or invalid altitude change");
-            onComplete?.Invoke();
-            return false;
-        }
-
+    
         // Store health to check if defeated after attack
         int initialHealth = targetFigure.CurrentHealth;
         
@@ -162,17 +126,17 @@ public class FigureCombatController : MonoBehaviour
         StartCoroutine(PerformAttackAnimation(selectedFigure, targetFigure, () => {
             // Apply damage
             int damage = selectedFigure.AttackPower;
-            targetFigure.TakeDamage(damage, selectedFigure.DamageType);
-
+            targetFigure.TakeDamage(damage, selectedFigure.DamageType, selectedFigure);
+    
             // Mark as attacked from this position
             MarkFigureAttacked(selectedFigure);
-
+    
             // If the target wasn't defeated, we need to unsubscribe 
             if (targetFigure != null && targetFigure.CurrentHealth > 0)
             {
                 targetFigure.OnDefeated -= defeatHandler;
             }
-
+    
             // Wait longer for the completion if we're capturing
             if (initialHealth <= damage)
             {
@@ -183,7 +147,7 @@ public class FigureCombatController : MonoBehaviour
                 onComplete?.Invoke();
             }
         }));
-
+    
         return true;
     }
 
@@ -326,10 +290,13 @@ public class FigureCombatController : MonoBehaviour
         // Get the figure's current position
         Vector2Int position = new Vector2Int(selectedFigure.CurrentQ, selectedFigure.CurrentR);
 
+        // Use a HashSet to avoid duplicate targets (important for bosses)
+        HashSet<Figure> uniqueTargets = new HashSet<Figure>();
+
         // Check all neighboring hexes
         foreach (Vector2Int neighbor in HexUtils.GetHexNeighbors(position.x, position.y))
         {
-            // Check if there's an enemy figure
+            // Check if there's an enemy figure (will also find bosses that occupy this hex)
             Figure figureAtHex = figureManager.GetFigureAt(neighbor.x, neighbor.y);
 
             if (figureAtHex != null && figureAtHex.PlayerId != selectedFigure.PlayerId)
@@ -337,11 +304,14 @@ public class FigureCombatController : MonoBehaviour
                 // Check if we can reach this hex for attack
                 if (CanReachForAttack(position, neighbor))
                 {
-                    targets.Add(figureAtHex);
+                    // Add to set to avoid duplicates
+                    uniqueTargets.Add(figureAtHex);
                 }
             }
         }
 
+        // Convert set back to list
+        targets.AddRange(uniqueTargets);
         return targets;
     }
     

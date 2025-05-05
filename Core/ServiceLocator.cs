@@ -24,10 +24,12 @@ public class ServiceLocator : MonoBehaviour
     public GameManager GameManager { get; private set; }
     public GameStateSystem GameStateSystem { get; private set; }
     public PlayerTurnSystem PlayerTurnSystem { get; private set; }
+    public SystemTurnController SystemTurnController { get; private set; }
     public PlayerManager PlayerManager { get; private set; }
     public PlayerController PlayerController { get; private set; }
     public FigurePool FigurePool { get; private set; }
     public FigureManager FigureManager { get; private set; }
+    public BossManager BossManager { get; private set; }
     public FigureController FigureController { get; private set; }
     public FieldManager FieldManager { get; private set; }
     public IndicatorManager IndicatorManager { get; private set; }
@@ -79,17 +81,21 @@ public class ServiceLocator : MonoBehaviour
         Debug.Log("ServiceLocator: Initializing gameplay services...");
         FigurePool = new FigurePool();
         PlayerTurnSystem = FindFirstObjectByType<PlayerTurnSystem>();
+        SystemTurnController = FindFirstObjectByType<SystemTurnController>();
         PlayerManager = FindFirstObjectByType<PlayerManager>();
         PlayerController = FindFirstObjectByType<PlayerController>();
         FigureManager = FindFirstObjectByType<FigureManager>();
+        BossManager = FindFirstObjectByType<BossManager>();
         FigureController = FindFirstObjectByType<FigureController>();
         IndicatorManager = FindFirstObjectByType<IndicatorManager>();
         
         // Log warnings for missing services
         if (PlayerTurnSystem == null) Debug.LogWarning("ServiceLocator: PlayerTurnSystem not found");
+        if (SystemTurnController == null) Debug.LogWarning("ServiceLocator: SystemTurnController not found");
         if (PlayerManager == null) Debug.LogWarning("ServiceLocator: PlayerManager not found");
         if (PlayerController == null) Debug.LogWarning("ServiceLocator: PlayerController not found");
         if (FigureManager == null) Debug.LogWarning("ServiceLocator: FigureManager not found");
+        if (BossManager == null) Debug.LogWarning("ServiceLocator: BossManager not found");
         if (FigureController == null) Debug.LogWarning("ServiceLocator: FigureController not found");
         if (IndicatorManager == null) Debug.LogWarning("ServiceLocator: IndicatorManager not found");
     }

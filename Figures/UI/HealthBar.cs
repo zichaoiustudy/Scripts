@@ -5,7 +5,7 @@ public class HealthBar : MonoBehaviour
 {
     [SerializeField] private Image fillBar;
     [SerializeField] private float yOffset = 1.5f; // Height above figure
-    [SerializeField] private float updateSpeed = 10f; // Speed of health bar updates
+    [SerializeField] private float updateSpeed = 20f; // Speed of health bar updates
     
     private Camera mainCamera;
     private Figure targetFigure;

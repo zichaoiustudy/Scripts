@@ -94,17 +94,21 @@ public class GameManager : MonoBehaviour
         var playerController = ServiceLocator.Instance.PlayerController;
         var figurePool = ServiceLocator.Instance.FigurePool;
         var figureManager = ServiceLocator.Instance.FigureManager;
+        var bossManager = ServiceLocator.Instance.BossManager;
         var figureController = ServiceLocator.Instance.FigureController;
         var indicatorManager = ServiceLocator.Instance.IndicatorManager;
-        var turnSystem = ServiceLocator.Instance.PlayerTurnSystem;
+        var playerTurnSystem = ServiceLocator.Instance.PlayerTurnSystem;
+        var systemTurnController = ServiceLocator.Instance.SystemTurnController;
         
         if (playerManager == null || 
             playerController == null || 
             figurePool == null || 
             figureManager == null || 
+            bossManager == null ||
+            systemTurnController == null ||
             figureController == null ||
             indicatorManager == null ||
-            turnSystem == null)
+            playerTurnSystem == null)
         {
             Debug.LogError("Required gameplay services not found!");
             return;
@@ -112,12 +116,17 @@ public class GameManager : MonoBehaviour
         
         // 5. Initialize figure pool from game config
         figurePool.Initialize(gameConfig);
+        playerManager.Initialize();
         playerController.Initialize();
-        turnSystem.Initialize();
+        playerTurnSystem.Initialize();
+        systemTurnController.Initialize();
         figureManager.Initialize();
+        bossManager.Initialize();
         figureController.Initialize();
         indicatorManager.Initialize();
+
         playerManager.InitializePlayers();
+        bossManager.SpawnBoss("Default");
         
         isGameplayInitialized = true;
         Debug.Log("<color=blue>[INITIALIZATION]</color> Gameplay components initialized successfully.");

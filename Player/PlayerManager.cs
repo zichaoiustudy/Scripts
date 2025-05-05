@@ -12,26 +12,7 @@ public class PlayerManager : MonoBehaviour
     // Properties
     public List<Player> Players => players;
 
-    // Method to directly spawn figures for all players
-    public void SpawnPlayerFigures()
-    {
-        if (figureManager == null) return;
-        
-        // Create a dictionary of player IDs to colors
-        Dictionary<int, Color> colorMap = new Dictionary<int, Color>();
-        foreach (Player player in players)
-        {
-            colorMap[player.playerId] = player.playerColor;
-        }
-        
-        // Call the figure manager with the color map
-        figureManager.SpawnPlayerFigures(colorMap);
-    }
-    
-    /// <summary>
-    /// Initialize all players for the game
-    /// </summary>
-    public void InitializePlayers()
+    public void Initialize()
     {
         if (ServiceLocator.Instance != null)
         {
@@ -50,7 +31,13 @@ public class PlayerManager : MonoBehaviour
             Debug.LogError("Required components not found during PlayerManager initialization!");
             return;
         }
+    }
 
+    /// <summary>
+    /// Initialize all players for the game
+    /// </summary>
+    public void InitializePlayers()
+    {
         players.Clear();
         figurePool.ResetAssignments();
 
@@ -96,8 +83,16 @@ public class PlayerManager : MonoBehaviour
         }
 
         turnSystem.SetPlayers(players);
-        SpawnPlayerFigures();
-
+        
+        // Create a dictionary of player IDs to colors
+        Dictionary<int, Color> colorMap = new Dictionary<int, Color>();
+        foreach (Player player in players)
+        {
+            colorMap[player.playerId] = player.playerColor;
+        }
+        
+        // Call the figure manager with the color map
+        figureManager.InitFigures(colorMap);
     }
 
     /// <summary>

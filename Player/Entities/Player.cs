@@ -9,6 +9,7 @@ using UnityEngine;
 [System.Serializable]
 public class Player
 {
+    private static int playerUUID; // Unique ID for each player
     public int playerId;
     public string playerName;
     public Color playerColor;
@@ -19,7 +20,7 @@ public class Player
     public int score;
     
     // Reference to all figures owned by this player
-    private List<Figure> playerFigures = new List<Figure>();
+    public List<Figure> playerFigures = new List<Figure>();
     
     /// <summary>
     /// Creates a new Player with the given ID
@@ -81,6 +82,16 @@ public class Player
     public List<Figure> GetFigures()
     {
         return new List<Figure>(playerFigures); // Return a copy to prevent external modifications
+    }
+
+    public void setUUID(int id)
+    {
+        playerUUID = id;
+    }
+    
+    public int getUUID()
+    {
+        return playerUUID;
     }
     
 }

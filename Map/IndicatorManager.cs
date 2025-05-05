@@ -11,7 +11,6 @@ public class IndicatorManager : MonoBehaviour
     [SerializeField] private GameObject indicatorPrefab;
     [SerializeField] private GameObject indicatorBarrier;
     [SerializeField] private GameObject attackableIndicatorPrefab;
-    [SerializeField] private Material indicatorMaterial;
     [SerializeField] private Material pathHighlightMaterial;
     [SerializeField] private float indicatorHeightOffset = 1f;
     
@@ -279,13 +278,6 @@ public class IndicatorManager : MonoBehaviour
         // Hide step number by default
         indicatorObj.SetStepNumber(0, false); 
         
-        // Apply the material
-        Renderer renderer = indicator.GetComponent<Renderer>();
-        if (renderer != null && indicatorMaterial != null)
-        {
-            renderer.material = indicatorMaterial;
-        }
-        
         // Add to tracking dictionary
         activeIndicators.Add(key, indicator);
         
@@ -382,7 +374,7 @@ public class IndicatorManager : MonoBehaviour
         // Add visual feedback (pulsing animation, etc.)
         // You can add a simple animation script to the attack indicator here if desired
     }
-    
+
     /// <summary>
     /// Clear all attack indicators
     /// </summary>

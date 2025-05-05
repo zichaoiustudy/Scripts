@@ -467,7 +467,7 @@ MonoBehaviour:
     height: 1
     altitude: 3
     terrainType: Plain
-    specialFunction: 
+    specialFunction: MonsterSpawn
     scale: 1
   - q: -6
     r: 5
@@ -595,7 +595,7 @@ MonoBehaviour:
     height: 1
     altitude: 3
     terrainType: Plain
-    specialFunction: 
+    specialFunction: MonsterSpawn
     scale: 1
   - q: -2
     r: -1
@@ -627,7 +627,7 @@ MonoBehaviour:
     height: 1
     altitude: 3
     terrainType: Plain
-    specialFunction: 
+    specialFunction: MonsterSpawn
     scale: 1
   - q: -1
     r: -5
@@ -667,7 +667,7 @@ MonoBehaviour:
     height: 1
     altitude: 3
     terrainType: Plain
-    specialFunction: 
+    specialFunction: BossSpawnDefault
     scale: 1
   - q: -1
     r: 1
@@ -675,7 +675,7 @@ MonoBehaviour:
     height: 1
     altitude: 3
     terrainType: Plain
-    specialFunction: 
+    specialFunction: BossSpawnDefault
     scale: 1
   - q: -1
     r: 2
@@ -739,7 +739,7 @@ MonoBehaviour:
     height: 1
     altitude: 3
     terrainType: Plain
-    specialFunction: 
+    specialFunction: BossSpawnDefault
     scale: 1
   - q: 0
     r: 0
@@ -747,7 +747,7 @@ MonoBehaviour:
     height: 1
     altitude: 3
     terrainType: Plain
-    specialFunction: 
+    specialFunction: BossSpawnDefault
     scale: 1
   - q: 0
     r: 1
@@ -755,7 +755,7 @@ MonoBehaviour:
     height: 1
     altitude: 3
     terrainType: Plain
-    specialFunction: 
+    specialFunction: BossSpawnDefault
     scale: 1
   - q: 0
     r: 4
@@ -811,7 +811,7 @@ MonoBehaviour:
     height: 1
     altitude: 3
     terrainType: Plain
-    specialFunction: 
+    specialFunction: BossSpawnDefault
     scale: 1
   - q: 1
     r: 0
@@ -819,7 +819,7 @@ MonoBehaviour:
     height: 1
     altitude: 3
     terrainType: Plain
-    specialFunction: 
+    specialFunction: BossSpawnDefault
     scale: 1
   - q: 1
     r: 1
@@ -875,7 +875,7 @@ MonoBehaviour:
     height: 1
     altitude: 3
     terrainType: Plain
-    specialFunction: 
+    specialFunction: MonsterSpawn
     scale: 1
   - q: 3
     r: -4
@@ -915,7 +915,7 @@ MonoBehaviour:
     height: 1
     altitude: 3
     terrainType: Plain
-    specialFunction: 
+    specialFunction: MonsterSpawn
     scale: 1
   - q: 4
     r: -4
@@ -931,7 +931,7 @@ MonoBehaviour:
     height: 1
     altitude: 3
     terrainType: Plain
-    specialFunction: 
+    specialFunction: MonsterSpawn
     scale: 1
   - q: 4
     r: 0

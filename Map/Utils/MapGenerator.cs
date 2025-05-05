@@ -121,7 +121,11 @@ public static class MapGenerator
             altitudeColors[3], altitudeHeights[3], altitudeTerrainTypes[3]);
             
         // Add player spawn points
-        AddPlayerSpawnPoints(mapData, mapSize);
+        AddPlayerSpawnPoints(mapData);
+        // Add boss spawn points
+        AddBossSpawnPoints(mapData);
+        // Add monster spawn points
+        AddMonsterSpawnPoints(mapData);
     }
     
     private static void GenerateTerrainForCoordinates(
@@ -176,7 +180,7 @@ public static class MapGenerator
         }
     }
     
-    private static void AddPlayerSpawnPoints(MapData mapData, int mapSize)
+    private static void AddPlayerSpawnPoints(MapData mapData)
     {
         // Use the specified player spawn locations
         Vector2Int[] spawnPoints = new Vector2Int[] {
@@ -202,6 +206,65 @@ public static class MapGenerator
             }
             
             spawnTileData.specialFunction = $"PlayerSpawn{i + 1}";
+        }
+    }
+
+    private static void AddBossSpawnPoints(MapData mapData)
+    {
+        // Use the specified boss spawn locations
+        Vector2Int[] spawnPoints = new Vector2Int[] {
+            new Vector2Int(0, 0),
+            new Vector2Int(0, 1),
+            new Vector2Int(1, 0),
+            new Vector2Int(-1, 1),
+            new Vector2Int(1, -1),
+            new Vector2Int(-1, 0),
+            new Vector2Int(0, -1),
+        };
+
+        // Add all spawn points
+        for (int i = 0; i < spawnPoints.Length; i++)
+        {
+            Vector2Int spawnPoint = spawnPoints[i];
+            HexTileData spawnTileData = mapData.GetHexTileData(spawnPoint.x, spawnPoint.y);
+            
+            // If the tile already exists, update it, otherwise create a new one
+            if (spawnTileData == null)
+            {
+                spawnTileData = new HexTileData(spawnPoint.x, spawnPoint.y);
+                mapData.AddHexTile(spawnTileData);
+            }
+            
+            spawnTileData.specialFunction = $"BossSpawnDefault";
+        }
+    }
+
+    private static void AddMonsterSpawnPoints(MapData mapData)
+    {
+        // Use the specified monster spawn locations
+        Vector2Int[] spawnPoints = new Vector2Int[] {
+            new Vector2Int(-6, 3),
+            new Vector2Int(-2, -2),
+            new Vector2Int(-2, 4),
+            new Vector2Int(4, -2),
+            new Vector2Int(3, -6),
+            new Vector2Int(3, 3)
+        };
+
+        // Add all spawn points
+        for (int i = 0; i < spawnPoints.Length; i++)
+        {
+            Vector2Int spawnPoint = spawnPoints[i];
+            HexTileData spawnTileData = mapData.GetHexTileData(spawnPoint.x, spawnPoint.y);
+            
+            // If the tile already exists, update it, otherwise create a new one
+            if (spawnTileData == null)
+            {
+                spawnTileData = new HexTileData(spawnPoint.x, spawnPoint.y);
+                mapData.AddHexTile(spawnTileData);
+            }
+            
+            spawnTileData.specialFunction = $"MonsterSpawn";
         }
     }
 }

@@ -26,6 +26,7 @@ public class GameConfig : ScriptableObject
     
     [Header("Figure Pool")]
     public List<GameObject> figurePrefabs = new List<GameObject>();
+    public List<GameObject> bossPrefabs = new List<GameObject>();
     
     [Header("Map Generation")]
     public MapData mapData;

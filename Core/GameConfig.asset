@@ -18,5 +18,6 @@ MonoBehaviour:
   playerColors: []
   figurePrefabs:
   - {fileID: 3211075025907837421, guid: e6155da83c7844225be9261b989e64b0, type: 3}
+  bossPrefabs: []
   mapData: {fileID: 11400000, guid: b1c62dc29e3fe43c2853598012556477, type: 2}
   fieldRadius: 3

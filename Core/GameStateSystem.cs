@@ -13,6 +13,7 @@ public class GameStateSystem : MonoBehaviour
         PreGame,        // Setup phase, setting game mode, player order
         PlayerTurns,    // Players taking turns in order
         SystemTurn,     // System turn (monsters, events, etc.)
+        Victory,        // Game has ended in victory
         GameOver        // Game has ended
     }
     
@@ -95,35 +96,58 @@ public int RoundNumber => roundNumber;
     }
     
     /// <summary>
-    /// Force a specific game state
+    /// Change the game state with proper transition handling
     /// </summary>
     public void SetGameState(GameState newState)
     {
         if (currentGameState == newState) return;
-        
-        GameState oldState = currentGameState;
-        currentGameState = newState;
 
+        GameState oldState = currentGameState;
         Debug.Log($"<color=yellow>[STATE CHANGE]</color> {oldState} → {newState} (Frame: {Time.frameCount}, Time: {Time.time:F2}s)");
         
-        // Handle state transition
-        OnGameStateChanged(oldState, newState);
-        
+        // Handle entry logic for new state
+        switch (newState)
+        {
+            case GameState.PreGame:
+                // Reset game state
+                roundNumber = 0;
+                break;
+
+            case GameState.PlayerTurns:
+                if (oldState == GameState.PreGame || oldState == GameState.SystemTurn)
+                {
+                    // Find PlayerTurnSystem when needed rather than storing a reference
+                    PlayerTurnSystem turnSystem = ServiceLocator.Instance?.PlayerTurnSystem;
+
+                    // Start with the first player
+                    if (turnSystem != null)
+                    {
+                        turnSystem.StartFirstPlayerTurn();
+                    }
+                }
+                break;
+
+            case GameState.SystemTurn:
+                // Start system turn (monsters, events)
+                StartSystemTurn();
+                break;
+
+            case GameState.Victory:
+                Debug.Log("<color=green>GAME VICTORY!</color> Boss has been defeated!");
+                // Display victory UI, play victory music, etc.
+                break;
+
+            case GameState.GameOver:
+                Debug.Log("<color=red>GAME OVER!</color>");
+                // Display game over UI, play failure music, etc.
+                break;
+        }
+
+        // Update the current state
+        currentGameState = newState;
+
         // Publish game state changed event
         PublishGameStateChanged(oldState, newState);
-
-    }
-
-    /// <summary>
-    /// Cycle to the next game state (for testing purposes)
-    /// </summary>
-    public void CycleGameState()
-    {
-        // Get the next state in the enum
-        GameState nextState = (GameState)(((int)currentGameState + 1) % System.Enum.GetValues(typeof(GameState)).Length);
-
-        // Set the new state
-        SetGameState(nextState);
     }
     
     #endregion
@@ -155,42 +179,6 @@ public int RoundNumber => roundNumber;
         
         // Back to player turns
         SetGameState(GameState.PlayerTurns);
-    }
-    
-    // Update OnGameStateChanged method to find PlayerTurnSystem when needed
-    private void OnGameStateChanged(GameState oldState, GameState newState)
-    {
-        switch (newState)
-        {
-            case GameState.PreGame:
-                // Reset game state
-                roundNumber = 0;
-                break;
-                
-            case GameState.PlayerTurns:
-                if (oldState == GameState.PreGame || oldState == GameState.SystemTurn)
-                {
-                    // Find PlayerTurnSystem when needed rather than storing a reference
-                    PlayerTurnSystem turnSystem = ServiceLocator.Instance?.PlayerTurnSystem;
-                    
-                    // Start with the first player
-                    if (turnSystem != null)
-                    {
-                        turnSystem.StartFirstPlayerTurn();
-                    }
-                }
-                break;
-                
-            case GameState.SystemTurn:
-                // Start system turn (monsters, events)
-                StartSystemTurn();
-                break;
-                
-            case GameState.GameOver:
-                // Game has ended
-                Debug.Log("Game Over!");
-                break;
-        }
     }
     
     // Update ResetGameState to find PlayerTurnSystem when needed

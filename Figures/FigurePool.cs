@@ -4,7 +4,8 @@ using UnityEngine;
 public class FigurePool
 {
     // List of all available figure prefabs
-    private List<GameObject> availableFigurePrefabs = new List<GameObject>();
+    private List<GameObject> figurePrefabs = new List<GameObject>();
+    private List<GameObject> bossPrefabs = new List<GameObject>();
     
     // Track which figures are assigned to which player (for unique figures)
     private Dictionary<GameObject, int> figureAssignments = new Dictionary<GameObject, int>();
@@ -20,7 +21,8 @@ public class FigurePool
     public void Initialize(GameConfig config)
     {
         // Reset all figures
-        availableFigurePrefabs.Clear();
+        figurePrefabs.Clear();
+        bossPrefabs.Clear();
         figureAssignments.Clear();
         figureCopyCounts.Clear();
         
@@ -31,11 +33,17 @@ public class FigurePool
             {
                 if (prefab != null)
                 {
-                    availableFigurePrefabs.Add(prefab);
+                    figurePrefabs.Add(prefab);
                 }
             }
-            
-            Debug.Log($"FigurePool initialized with {availableFigurePrefabs.Count} figure prefabs");
+
+            foreach(var prefab in config.bossPrefabs)
+            {
+                if (prefab != null)
+                {
+                    bossPrefabs.Add(prefab);
+                }
+            }
         }
         else
         {
@@ -62,7 +70,7 @@ public class FigurePool
     public List<GameObject> GetUnassignedFigures()
     {
         List<GameObject> unassigned = new List<GameObject>();
-        foreach (var figure in availableFigurePrefabs)
+        foreach (var figure in figurePrefabs)
         {
             if (!figureAssignments.ContainsKey(figure))
             {
@@ -75,27 +83,27 @@ public class FigurePool
     /// <summary>
     /// Find figure prefab by name
     /// </summary>
-    private GameObject FindFigurePrefabByName(string figureName)
+    public GameObject FindFigurePrefabByName(string figureName)
     {
         if (string.IsNullOrEmpty(figureName))
             return null;
-    
-        foreach (var prefab in availableFigurePrefabs)
+
+        foreach (var prefab in figurePrefabs)
         {
             if (prefab == null) 
                 continue;
-                
+
             // Check if it matches the prefab name directly
             if (prefab.name.Equals(figureName, System.StringComparison.OrdinalIgnoreCase))
                 return prefab;
-                
+
             // Also check if it has a Figure component with matching name
             Figure component = prefab.GetComponent<Figure>();
             if (component != null && !string.IsNullOrEmpty(component.FigureName) && 
                 component.FigureName.Equals(figureName, System.StringComparison.OrdinalIgnoreCase))
                 return prefab;
         }
-        
+
         return null; // No match found
     }
     
@@ -301,7 +309,7 @@ public class FigurePool
     }
     
     #endregion
-    
+
     #region Get Assigned Figures
     
     /// <summary>
@@ -342,6 +350,11 @@ public class FigurePool
         }
         
         return result;
+    }
+
+    public List<GameObject> GetBossPrefabs()
+    {
+        return bossPrefabs;
     }
     
     #endregion
