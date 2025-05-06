@@ -63,6 +63,11 @@ public class MultiHexOccupier : MonoBehaviour
         }
         return false;
     }
+
+    public List<Vector2Int> GetOccupiedPositions()
+    {
+        return new List<Vector2Int>(occupiedPositions);
+    }
     
     private void ClearOccupiedPositions()
     {

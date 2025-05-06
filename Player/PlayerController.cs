@@ -27,13 +27,13 @@ public class PlayerController : MonoBehaviour
             Debug.LogError("ServiceLocator not found!");
             return;
         }
+
+        if (turnSystem == null || playerManager == null || figureController == null)
+            return;
     }
     
     private void Update()
     {
-        if (turnSystem == null || playerManager == null || figureController == null)
-            return;
-            
         // Don't process input if we're animating a figure movement
         if (figureController.IsMovingFigure() || waitingForAnimation)
             return;

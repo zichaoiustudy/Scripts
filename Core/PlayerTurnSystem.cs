@@ -10,6 +10,7 @@ public class PlayerTurnSystem : MonoBehaviour
     public enum PlayerTurnPhase
     {
         None,               // Initial state
+        Prepare,            // Prepare for the turn
         Draw,               // Draw cards phase
         Roll,               // Roll dice phase
         ActivateTreasure,   // Activate treasure cards (if any)
@@ -40,6 +41,7 @@ public class PlayerTurnSystem : MonoBehaviour
     private GameStateSystem gameStateSystem;
     private EventSystem eventSystem;
     private PlayerController playerController;
+    private FigureManager figureManager;
 
     // Events
     public delegate void PlayerTurnChangedHandler(Player newActivePlayer);
@@ -71,9 +73,10 @@ public class PlayerTurnSystem : MonoBehaviour
         gameStateSystem = ServiceLocator.Instance.GameStateSystem;
         eventSystem = ServiceLocator.Instance.Events;
         playerController = ServiceLocator.Instance.PlayerController;
+        figureManager = ServiceLocator.Instance.FigureManager;
         
         // Check for missing dependencies
-        if (gameStateSystem == null || eventSystem == null || playerController == null)
+        if (gameStateSystem == null || eventSystem == null || playerController == null || figureManager == null)
         {
             Debug.LogError("PlayerTurnSystem: Required services not found!");
             return;
@@ -179,7 +182,7 @@ public class PlayerTurnSystem : MonoBehaviour
     private void BeginPlayerTurnPhases()
     {
         // Start with the first phase
-        AdvanceToPhase(PlayerTurnPhase.Draw);
+        AdvanceToPhase(PlayerTurnPhase.Prepare);
     }
     
     /// <summary>
@@ -249,6 +252,9 @@ public class PlayerTurnSystem : MonoBehaviour
         switch (currentPhase)
         {
             case PlayerTurnPhase.None:
+                nextPhase = PlayerTurnPhase.Prepare;
+                break;
+            case PlayerTurnPhase.Prepare:
                 nextPhase = PlayerTurnPhase.Draw;
                 break;
             case PlayerTurnPhase.Draw:
@@ -296,6 +302,19 @@ public class PlayerTurnSystem : MonoBehaviour
         
         switch (newPhase)
         {
+            case PlayerTurnPhase.Prepare:
+                Debug.Log($"Player {currentPlayer?.playerId} Prepare Phase");
+
+                // Spawn captured monsters for the current player
+                if (currentPlayer != null)
+                {
+                    figureManager.SpawnCapturedMonsters(currentPlayer);
+                }
+
+                // Automatically advance to the next phase after preparation
+                if (autoAdvancePhases) Invoke("AdvanceToNextPhase", autoAdvanceDelay);
+                break;
+        
             case PlayerTurnPhase.Draw:
                 Debug.Log($"Player {currentPlayer?.playerId} Draw Phase");
                 if (autoAdvancePhases) Invoke("AdvanceToNextPhase", autoAdvanceDelay);

@@ -159,8 +159,12 @@ public class FigureManager : MonoBehaviour
         SpawnMonsters();
     }
 
-    // Spawn monsters for system turn
-    public List<Figure> SpawnMonsters(bool useLeftoverFigures = false)
+    /// <summary>
+    /// Spawn monsters at unoccupied spawn locations with optional prioritization
+    /// </summary>
+    /// <param name="priorityPositions">Optional list of positions to spawn at in order of priority</param>
+    /// <param name="useLeftoverFigures">Whether to use leftover unassigned figures for spawning</param>
+    public List<Figure> SpawnMonsters(List<Vector2Int> priorityPositions = null, bool useLeftoverFigures = false)
     {
         List<Figure> spawnedMonsters = new List<Figure>();
 
@@ -182,38 +186,76 @@ public class FigureManager : MonoBehaviour
 
         if (useLeftoverFigures)
         {
-            // Approach 1: Use figures not assigned to any player
+            // Use figures not assigned to any player
             monsterPrefabs = figurePool.GetUnassignedFigures();
             Debug.Log($"Using {monsterPrefabs.Count} leftover figures for monster spawning");
         }
         else
         {
-            // Approach 2: Use figures specifically assigned for monsters (-1 ID)
-            string[] figureNames = new string[monsterSpawnLocations.Count];
-            for (int i = 0; i < monsterSpawnLocations.Count; i++)
-            {
-                figureNames[i] = "Default";
-            }
-            figurePool.AssignDuplicateFiguresToPlayerByName(-1, figureNames);
-
+            // Use figures specifically assigned for monsters (-1 ID)
             monsterPrefabs = figurePool.GetFiguresForPlayer(-1);
+
+            // If no monster figures explicitly assigned, create duplicates
+            if (monsterPrefabs.Count == 0)
+            {
+                string[] figureNames = new string[monsterSpawnLocations.Count];
+                for (int i = 0; i < monsterSpawnLocations.Count; i++)
+                {
+                    figureNames[i] = "Default";
+                }
+                figurePool.AssignDuplicateFiguresToPlayerByName(-1, figureNames);
+                monsterPrefabs = figurePool.GetFiguresForPlayer(-1);
+            }
         }
 
         if (monsterPrefabs.Count == 0)
         {
-            Debug.Log("No figure prefabs available for monsters");
+            Debug.LogWarning("No figure prefabs available for monsters");
             return spawnedMonsters;
         }
 
-        // For each monster spawn location
-        foreach (Vector2Int spawnPos in monsterSpawnLocations)
+        // Determine which positions to spawn at
+        List<Vector2Int> spawnPositions = new List<Vector2Int>();
+
+        if (priorityPositions != null && priorityPositions.Count > 0)
         {
-            // Skip occupied positions
+            // Use the provided priority positions
+            spawnPositions = priorityPositions;
+            Debug.Log($"Using {spawnPositions.Count} priority spawn positions");
+        }
+        else
+        {
+            // Use all unoccupied spawn locations
+            foreach (Vector2Int spawnPos in monsterSpawnLocations)
+            {
+                if (!IsHexOccupied(spawnPos.x, spawnPos.y))
+                {
+                    spawnPositions.Add(spawnPos);
+                }
+            }
+            Debug.Log($"Found {spawnPositions.Count} unoccupied spawn positions");
+        }
+
+        // Limit spawns to available prefabs
+        int spawnsCount = Mathf.Min(spawnPositions.Count, monsterPrefabs.Count);
+
+        // For each position in the spawn list (up to available prefabs)
+        for (int i = 0; i < spawnsCount; i++)
+        {
+            Vector2Int spawnPos = spawnPositions[i];
+
+            // Double-check position is not occupied (in case priority list contains occupied positions)
             if (IsHexOccupied(spawnPos.x, spawnPos.y))
                 continue;
 
             // Choose a random figure prefab from the monster pool
             GameObject figurePrefab = monsterPrefabs[Random.Range(0, monsterPrefabs.Count)];
+
+            // Remove this prefab to prevent duplicates if we're using unassigned figures
+            if (useLeftoverFigures)
+            {
+                monsterPrefabs.Remove(figurePrefab);
+            }
 
             // Spawn monster with ID -1 (system-controlled)
             Figure monster = SpawnFigure(-1, spawnPos.x, spawnPos.y, Color.gray, figurePrefab);
@@ -222,20 +264,24 @@ public class FigureManager : MonoBehaviour
                 spawnedMonsters.Add(monster);
                 Debug.Log($"Spawned monster {monster.FigureName} at ({spawnPos.x}, {spawnPos.y})");
             }
+
+            // If we've used all available prefabs, stop
+            if (useLeftoverFigures && monsterPrefabs.Count == 0)
+                break;
         }
 
         return spawnedMonsters;
     }
     
     // Handle monster capture when a player defeats it
-    public void CaptureMonster(Figure monster, int capturingPlayerId)
+    public bool CaptureMonster(Figure monster, int capturingPlayerId)
     {
         if (monster == null || monster.PlayerId >= 0) // Only capture system figures (negative IDs)
-            return;
+            return false;
 
         Player player = playerManager.GetPlayerById(capturingPlayerId);
-        if (player == null)
-            return;
+        if (player == null || player.playerFigures.Count >= gameConfig.figuresPerPlayer)
+            return false;
 
         // Store the figure prefab in the captured queue
         GameObject figurePrefab = figurePool.FindFigurePrefabByName(monster.FigureName);
@@ -249,11 +295,17 @@ public class FigureManager : MonoBehaviour
             capturedMonsters[capturingPlayerId].Add(figurePrefab);
 
             Debug.Log($"Player {capturingPlayerId} captured a {monster.FigureName}!");
+            return true;
+        }
+        else
+        {
+            Debug.LogWarning($"Figure prefab for {monster.FigureName} not found in pool!");
+            return false;
         }
     }
     
     // Spawn any monsters that players have captured
-    private void SpawnCapturedMonsters(Player player)
+    public void SpawnCapturedMonsters(Player player)
     {
         if (player == null)
             return;
@@ -299,8 +351,6 @@ public class FigureManager : MonoBehaviour
         // Remove the spawned monsters from the captured list
         capturedMonsters[playerId].RemoveRange(0, monstersToSpawn);
     }
-    
-    // New methods for handling multi-hex figures
     
     // Register additional positions for multi-hex figures
     public void RegisterAdditionalPosition(Figure figure, int q, int r)
@@ -454,6 +504,22 @@ public class FigureManager : MonoBehaviour
         return null;
     }
     
+    /// Get all active system-controlled figures (monsters and bosses)
+    public List<Figure> GetAllSystemFigures()
+    {
+        List<Figure> systemFigures = new List<Figure>();
+        
+        foreach (Figure figure in figureMap.Values)
+        {
+            // Only include unique figures
+            if (figure != null && figure.PlayerId < 0 && !systemFigures.Contains(figure))
+            {
+                systemFigures.Add(figure);
+            }
+        }
+        
+        return systemFigures;
+    }
     // Check if a hex position is occupied
     public bool IsHexOccupied(int q, int r)
     {

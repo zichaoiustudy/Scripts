@@ -54,6 +54,7 @@ public int RoundNumber => roundNumber;
         {
             Debug.Log("<color=blue>[SYSTEM]</color> GameStateSystem subscribing to events");
             ServiceLocator.Instance.Events.Subscribe<GameResetEvent>(HandleGameReset);
+            ServiceLocator.Instance.Events.Subscribe<SystemTurnEndedEvent>(HandleSystemTurnEnded);
         }
         else
         {
@@ -63,13 +64,25 @@ public int RoundNumber => roundNumber;
             Invoke("SafeSubscribeToEvents", 0.5f);
         }
     }
-    
+
     private void UnsubscribeFromEvents()
     {
         if (ServiceLocator.Instance?.Events != null)
         {
             ServiceLocator.Instance.Events.Unsubscribe<GameResetEvent>(HandleGameReset);
+            ServiceLocator.Instance.Events.Unsubscribe<SystemTurnEndedEvent>(HandleSystemTurnEnded);
         }
+    }
+
+    private void HandleSystemTurnEnded(SystemTurnEndedEvent evt)
+    {
+        // Increase the round counter
+        roundNumber++;
+
+        Debug.Log($"System Turn ended, advancing to round {roundNumber}");
+
+        // Back to player turns
+        SetGameState(GameState.PlayerTurns);
     }
     
     private void HandleGameReset(GameResetEvent evt)
@@ -155,30 +168,10 @@ public int RoundNumber => roundNumber;
     #region Private Methods
     
     private void StartSystemTurn()
-    {
-        Debug.Log($"Starting System Turn (Round {roundNumber})");
-        
-        // Here you would implement monster movement, events, etc.
-        
+    {        
         // Publish system turn started event
         PublishSystemTurnStarted();
-        
-        // For now, just end the system turn immediately
-        EndSystemTurn();
-    }
-    
-    private void EndSystemTurn()
-    {
-        Debug.Log("System Turn ended");
-        
-        // Increase the round counter
-        roundNumber++;
-        
-        // Publish system turn ended event
-        PublishSystemTurnEnded();
-        
-        // Back to player turns
-        SetGameState(GameState.PlayerTurns);
+
     }
     
     // Update ResetGameState to find PlayerTurnSystem when needed
@@ -204,14 +197,6 @@ public int RoundNumber => roundNumber;
     private void PublishSystemTurnStarted()
     {
         ServiceLocator.Instance?.Events.Publish(new SystemTurnStartedEvent
-        {
-            RoundNumber = roundNumber
-        });
-    }
-    
-    private void PublishSystemTurnEnded()
-    {
-        ServiceLocator.Instance?.Events.Publish(new SystemTurnEndedEvent
         {
             RoundNumber = roundNumber
         });

@@ -135,6 +135,9 @@ public class FigureController : MonoBehaviour
     public bool AttackFromIndicator(AttackIndicator indicator, int availableActionPoints, System.Action onComplete = null) => 
         combatController.AttackFromIndicator(indicator, availableActionPoints, onComplete);
 
+    public void AttackFigure(Figure targetFigure, int availableActionPoints, System.Action onComplete = null) =>
+        combatController.AttackFigure(targetFigure, availableActionPoints, onComplete);
+
     public void ShowAttackIndicators() => 
         combatController.ShowAttackIndicators();
 
